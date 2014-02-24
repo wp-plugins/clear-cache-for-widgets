@@ -2,8 +2,8 @@
 Contributors: webheadllc
 Tags: wpengine, widget, cache, clear, purge, w3t, W3 Total Cache, WP Super Cache
 Requires at least: 3.8
-Tested up to: 3.8
-Stable tag: 0.1
+Tested up to: 3.8.1
+Stable tag: 0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,6 +15,9 @@ W3 Total Cache and WP Super Cache are great caching plugins, but they do not kno
 
 
 == Changelog ==
+
+= 0.2 =
+Removed garbage at the end of the plugin url.
 
 = 0.1 =
 Initial release.

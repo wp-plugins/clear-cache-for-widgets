@@ -1,11 +1,11 @@
 <?php 
 /*
 Plugin Name: Clear Cache For Widgets
-Plugin URI: http://mymonkeydo.com/caching-with-widgets/ ‎
+Plugin URI: http://mymonkeydo.com/caching-with-widgets/‎
 Description: Purges all cache on WT3, WP Super Cache, or WPEngine when updating a widget.
 Author: Webhead LLC
 Author URI: http://webheadcoder.com 
-Version: 0.1
+Version: 0.2
 */
 
 function clear_cache_for_widgets( $instance ) {
