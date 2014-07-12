@@ -3,7 +3,7 @@ Contributors: webheadllc
 Tags: wpengine, widget, cache, clear, purge, w3t, W3 Total Cache, WP Super Cache
 Requires at least: 3.8
 Tested up to: 3.9.1
-Stable tag: 0.3
+Stable tag: 0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,6 +17,9 @@ Now there is a convenient clear cache button on the dashboard for users with the
 
 
 == Changelog ==
+
+= 0.4 =
+Bug fixed: Fixed cache not clearing when updating nav menu. (thanks to Ov3rfly for catching this and supplying the fix)
 
 = 0.3 =
 Added clear caching for menus

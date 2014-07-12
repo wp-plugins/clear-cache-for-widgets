@@ -5,7 +5,7 @@ Plugin URI: http://mymonkeydo.com/caching-with-widgets
 Description: Purges all cache on WT3, WP Super Cache, or WPEngine when updating the menus or widgets.  Also adds a button to the dashboard to clear the cache.
 Author: Webhead LLC
 Author URI: http://webheadcoder.com 
-Version: 0.3
+Version: 0.4
 */
 
 /**
@@ -13,7 +13,7 @@ Version: 0.3
  */
 function ccfm_init() {
     if ( ccfm_supported_caching_exists() ) {
-        add_action( 'wp_update_nav_menu', 'clear_cache_for_me', 10 );
+        add_action( 'wp_update_nav_menu', 'ccfm_clear_cache_for_me', 10 );
         add_filter( 'widget_update_callback', 'ccfm_clear_cache_for_widgets', 10 );
         add_action('wp_dashboard_setup', 'ccfm_dashboard_widget' );
         add_action( 'admin_init', 'ccfm_clear_cache_requested' );
