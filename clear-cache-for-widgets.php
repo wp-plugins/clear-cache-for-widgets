@@ -5,17 +5,23 @@ Plugin URI: http://mymonkeydo.com/caching-with-widgets
 Description: Purges all cache on WT3, WP Super Cache, or WPEngine when updating the menus or widgets.  Also adds a button to the dashboard to clear the cache.
 Author: Webhead LLC
 Author URI: http://webheadcoder.com 
-Version: 0.4
+Version: 0.5
 */
+
+// locale
+function ccfm_plugins_loaded() {
+	load_plugin_textdomain( 'ccfm', false, dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
+}
+add_action( 'plugins_loaded', 'ccfm_plugins_loaded' );
 
 /**
  * Only run our stuff if we can do something.
  */
 function ccfm_init() {
     if ( ccfm_supported_caching_exists() ) {
-        add_action( 'wp_update_nav_menu', 'ccfm_clear_cache_for_me', 10 );
-        add_filter( 'widget_update_callback', 'ccfm_clear_cache_for_widgets', 10 );
-        add_action('wp_dashboard_setup', 'ccfm_dashboard_widget' );
+        add_action( 'wp_update_nav_menu', 'ccfm_clear_cache_for_menus' );
+        add_filter( 'widget_update_callback', 'ccfm_clear_cache_for_widgets' );
+        add_action( 'wp_dashboard_setup', 'ccfm_dashboard_widget' );
         add_action( 'admin_init', 'ccfm_clear_cache_requested' );
         add_action( 'admin_init', 'ccfm_set_capability' );
     }
@@ -26,13 +32,14 @@ add_action( 'init', 'ccfm_init' );
  * Return true if known caching systems exists.
  */
 function ccfm_supported_caching_exists() {
-    return function_exists( 'w3tc_pgcache_flush' ) || function_exists( 'wp_cache_clean_cache' ) || class_exists( 'WpeCommon' );
+    $supported = function_exists( 'w3tc_pgcache_flush' ) || function_exists( 'wp_cache_clean_cache' ) || class_exists( 'WpeCommon' );
+    return apply_filters( 'ccfm_supported_caching_exists', $supported );
 }
 
 /**
  * Clear the caches!
  */
-function ccfm_clear_cache_for_me() {
+function ccfm_clear_cache_for_me( $source ) {
     // if W3 Total Cache is being used, clear the cache
     if ( function_exists( 'w3tc_pgcache_flush' ) ) { 
         w3tc_pgcache_flush(); 
@@ -47,13 +54,21 @@ function ccfm_clear_cache_for_me() {
         WpeCommon::clear_maxcdn_cache();
         WpeCommon::purge_varnish_cache();   
     }
+	do_action( 'ccfm_clear_cache_for_me', $source );
+}
+
+/**
+ * Clear the caches for menus.
+ */
+function ccfm_clear_cache_for_menus() {
+    ccfm_clear_cache_for_me( 'menu' );
 }
 
 /**
  * Clear the caches for widgets.
  */
 function ccfm_clear_cache_for_widgets( $instance ) {
-    ccfm_clear_cache_for_me();
+    ccfm_clear_cache_for_me( 'widget' );
     return $instance;
 }
 
@@ -85,19 +100,19 @@ function ccfm_dashboard_widget_output() {
     if ( current_user_can( $needed_cap ) ) : ?>
     <p>
     <form method="get">
-        <input type="submit" name="ccfm" class="button button-primary button-large" value="Clear Cache Now!">
+        <input type="submit" name="ccfm" class="button button-primary button-large" value="<?php _e( 'Clear Cache Now!', 'ccfm' ); ?>">
     </form>
     </p>
     <?php if ( current_user_can( 'manage_options' ) ) : ?>
     <p>
     <form method="post">
-        Show button for users with capability:<br>
+        <?php _e( 'Show button for users with capability:', 'ccfm' ); ?><br>
         <select name="ccfm_permission">
             <?php foreach ( $caps as $cap ) : ?>
                 <option value="<?php echo esc_attr($cap); ?>" <?php selected( $needed_cap, $cap );?>><?php echo $cap; ?></option>
             <?php endforeach; ?>
         </select>
-        <input type="submit" class="button button-large" value="Set">
+        <input type="submit" class="button button-large" value="<?php _e( 'Set', 'ccfm' ); ?>">
     </form>
     </p>
     <?php
@@ -112,7 +127,7 @@ function ccfm_clear_cache_requested() {
     if ( isset( $_GET['ccfm'] ) ) {
         $needed_cap = get_option( 'ccfm_permission', 'manage_options' );
         if ( current_user_can( $needed_cap ) ) {
-            ccfm_clear_cache_for_me();
+            ccfm_clear_cache_for_me( 'button' );
             add_action( 'admin_notices', 'ccfm_success' );
         }
         else {
@@ -153,6 +168,3 @@ function ccfm_error() { ?>
     </div>
 <?php
 }
-
-
-
