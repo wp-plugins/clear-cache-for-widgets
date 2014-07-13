@@ -1,0 +1,35 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Clear Cache For Me 0.4\n"
+"POT-Creation-Date: 2014-07-13 02:34+0100\n"
+"PO-Revision-Date: 2014-07-13 02:38+0100\n"
+"Last-Translator: \n"
+"Language-Team: Ov3rfly <https://profiles.wordpress.org/Ov3rfly>\n"
+"Language: de_DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.5\n"
+"X-Poedit-KeywordsList: _;__;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: ../clear-cache-for-widgets.php:89
+msgid "Clear Cache Now!"
+msgstr "Cache löschen!"
+
+#: ../clear-cache-for-widgets.php:95
+msgid "Show button for users with capability:"
+msgstr "Button für Benutzer mit dieser Capability anzeigen:"
+
+#: ../clear-cache-for-widgets.php:101
+msgid "Set"
+msgstr "Speichern"
+
+#: ../clear-cache-for-widgets.php:143
+msgid "Cache cleared!"
+msgstr "Cache gelöscht!"
+
+#: ../clear-cache-for-widgets.php:153
+msgid "You do not have permission to clear the cache."
+msgstr "Sie dürfen den Cache nicht löschen."
