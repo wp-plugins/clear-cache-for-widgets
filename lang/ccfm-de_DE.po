@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Clear Cache For Me 0.4\n"
-"POT-Creation-Date: 2014-07-13 02:34+0100\n"
-"PO-Revision-Date: 2014-07-13 02:38+0100\n"
+"Project-Id-Version: Clear Cache For Me 0.5.4\n"
+"POT-Creation-Date: 2014-07-17 10:56+0100\n"
+"PO-Revision-Date: 2014-07-17 00:59+0100\n"
 "Last-Translator: \n"
 "Language-Team: Ov3rfly <https://profiles.wordpress.org/Ov3rfly>\n"
 "Language: de_DE\n"
@@ -14,22 +14,28 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
-#: ../clear-cache-for-widgets.php:89
+#: ../clear-cache-for-widgets.php:106
 msgid "Clear Cache Now!"
 msgstr "Cache löschen!"
 
-#: ../clear-cache-for-widgets.php:95
+#: ../clear-cache-for-widgets.php:112
 msgid "Show button for users with capability:"
 msgstr "Button für Benutzer mit dieser Capability anzeigen:"
 
-#: ../clear-cache-for-widgets.php:101
+#: ../clear-cache-for-widgets.php:126
 msgid "Set"
 msgstr "Speichern"
 
-#: ../clear-cache-for-widgets.php:143
+#: ../clear-cache-for-widgets.php:171
 msgid "Cache cleared!"
 msgstr "Cache gelöscht!"
 
-#: ../clear-cache-for-widgets.php:153
+#: ../clear-cache-for-widgets.php:181
 msgid "You do not have permission to clear the cache."
 msgstr "Sie dürfen den Cache nicht löschen."
+
+msgid "Instructions to show above button (optional):"
+msgstr "Kurzanleitung oberhalb des Buttons (optional):"
+
+msgid "Settings"
+msgstr "Einstellungen"

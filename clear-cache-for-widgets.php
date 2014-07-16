@@ -2,31 +2,43 @@
 /*
 Plugin Name: Clear Cache For Me
 Plugin URI: http://mymonkeydo.com/caching-with-widgets
-Description: Purges all cache on WT3, WP Super Cache, or WPEngine when updating the menus or widgets.  Also adds a button to the dashboard to clear the cache.
+Description: Purges all cache on WT3, WP Super Cache, or WPEngine when updating the menus or widgets.  Also adds a button with optional instructions to the dashboard to clear the cache.
 Author: Webhead LLC
 Author URI: http://webheadcoder.com 
-Version: 0.5
+Version: 0.6
 */
 
 // locale
 function ccfm_plugins_loaded() {
-	load_plugin_textdomain( 'ccfm', false, dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
+    load_plugin_textdomain( 'ccfm', false, dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
 }
 add_action( 'plugins_loaded', 'ccfm_plugins_loaded' );
 
+
 /**
- * Only run our stuff if we can do something.
+ * Add widget save, reorder and delete detection.  Thanks to Ov3rfly.
  */
-function ccfm_init() {
+function ccfm_admin_init() {
     if ( ccfm_supported_caching_exists() ) {
-        add_action( 'wp_update_nav_menu', 'ccfm_clear_cache_for_menus' );
-        add_filter( 'widget_update_callback', 'ccfm_clear_cache_for_widgets' );
+        ccfm_handle_requests();
+        ccfm_set_capability();
+
         add_action( 'wp_dashboard_setup', 'ccfm_dashboard_widget' );
-        add_action( 'admin_init', 'ccfm_clear_cache_requested' );
-        add_action( 'admin_init', 'ccfm_set_capability' );
+
+        //detect widget save, reorder and delete detection.  Thanks to Ov3rfly.
+        add_action( 'wp_ajax_save-widget', 'ccfm_clear_cache_for_widgets_wp_ajax_action', 1 );
+        add_action( 'wp_ajax_widgets-order', 'ccfm_clear_cache_for_widgets_wp_ajax_action', 1 );
+        add_action( 'sidebar_admin_setup', 'ccfm_clear_cache_for_widgets_sidebar_admin_setup' );
+        //detect customize theme actions.
+        add_action( 'customize_save_after', 'ccfm_clear_cache_for_customized_theme' );
+
+        //detect nav menu changes
+        add_action( 'wp_update_nav_menu', 'ccfm_clear_cache_for_menus' );
+
+        do_action( 'ccfm_admin_init' );
     }
 }
-add_action( 'init', 'ccfm_init' );
+add_action( 'admin_init', 'ccfm_admin_init' ); // not 'init'
 
 /**
  * Return true if known caching systems exists.
@@ -54,7 +66,7 @@ function ccfm_clear_cache_for_me( $source ) {
         WpeCommon::clear_maxcdn_cache();
         WpeCommon::purge_varnish_cache();   
     }
-	do_action( 'ccfm_clear_cache_for_me', $source );
+    do_action( 'ccfm_clear_cache_for_me', $source );
 }
 
 /**
@@ -65,11 +77,26 @@ function ccfm_clear_cache_for_menus() {
 }
 
 /**
- * Clear the caches for widgets.
+ * Clear the caches for widgets.  Thanks to Ov3rfly
  */
-function ccfm_clear_cache_for_widgets( $instance ) {
+function ccfm_clear_cache_for_widgets_wp_ajax_action() {
+    // wp-admin/admin-ajax.php
+    // 'widgets-order', 'save-widget'
     ccfm_clear_cache_for_me( 'widget' );
-    return $instance;
+}
+function ccfm_clear_cache_for_widgets_sidebar_admin_setup() {
+    // wp-admin/widgets.php
+    // We're saving/deleting a widget without js/ajax
+    if ( !empty( $_POST ) && ( isset($_POST['savewidget']) || isset($_POST['removewidget']) ) ) {
+        ccfm_clear_cache_for_me( 'widget' );
+    }
+}
+
+/**
+ * Clear the cache when a theme customizations are saved (in Appearance->Customize)
+ */
+function ccfm_clear_cache_for_customized_theme() {
+    ccfm_clear_cache_for_me( 'customize' );   
 }
 
 /**
@@ -83,52 +110,89 @@ function ccfm_dashboard_widget() {
 }
 
 function ccfm_dashboard_widget_output() {
-    global $wp_roles; 
-    if ( current_user_can( 'manage_options' ) ) {
-        $roles = $wp_roles->roles;
-        $caps = array();
-        foreach( $roles as $role ) {
-            if ( !empty( $role['capabilities'] ) ) {
-                foreach ( $role['capabilities'] as $capability => $val ) {
-                    $caps[ $capability ] = $capability;
-                }   
-            }
-        }
-        asort( $caps );
-    }
     $needed_cap = get_option( 'ccfm_permission', 'manage_options' );
-    if ( current_user_can( $needed_cap ) ) : ?>
-    <p>
-    <form method="get">
-        <input type="submit" name="ccfm" class="button button-primary button-large" value="<?php _e( 'Clear Cache Now!', 'ccfm' ); ?>">
-    </form>
-    </p>
-    <?php if ( current_user_can( 'manage_options' ) ) : ?>
-    <p>
+    if ( current_user_can( $needed_cap ) ) {
+        $infotext = get_option( 'ccfm_infotext', '' );
+    ?>
     <form method="post">
-        <?php _e( 'Show button for users with capability:', 'ccfm' ); ?><br>
-        <select name="ccfm_permission">
+    <?php echo ( $infotext ) ? '<label for="ccfm-cache-button">' . $infotext . '</label>' : ''; ?>
+    <p>
+        <?php wp_nonce_field( 'ccfm' ); ?>
+        <input id="ccfm-cache-button" type="submit" name="ccfm" class="button button-primary button-large" value="<?php _e( 'Clear Cache Now!', 'ccfm' ); ?>">
+    </p>
+    </form>
+    <?php
+        if ( current_user_can( 'manage_options' ) ) {
+            global $wp_roles;
+            $roles = $wp_roles->roles;
+            $caps = array();
+            foreach( $roles as $role ) {
+                if ( !empty( $role['capabilities'] ) ) {
+                    foreach ( $role['capabilities'] as $capability => $val ) {
+                        $caps[ $capability ] = $capability;
+                    }   
+                }
+            }
+            asort( $caps );
+    ?>
+    <hr>
+    <br>
+    <h4><?php _e( 'Settings', 'ccfm' ); ?></h4>
+    <form method="post">
+    <p>
+        <label for="ccfm_permission"><?php _e( 'Show button for users with capability:', 'ccfm' ); ?></label><br>
+        <select name="ccfm_permission" id="ccfm_permission">
             <?php foreach ( $caps as $cap ) : ?>
                 <option value="<?php echo esc_attr($cap); ?>" <?php selected( $needed_cap, $cap );?>><?php echo $cap; ?></option>
             <?php endforeach; ?>
         </select>
-        <input type="submit" class="button button-large" value="<?php _e( 'Set', 'ccfm' ); ?>">
-    </form>
     </p>
+    <p>
+        <label for="ccfm_infotext"><?php _e( 'Instructions to show above button (optional):', 'ccfm' ); ?></label><br>
+        <input style="width:75%;" id="ccfm_infotext" name="ccfm_infotext" type="text" value="<?php echo ( $infotext ) ? esc_attr( $infotext) : ''; ?>" />
+    </p>
+    <p>
+        <?php wp_nonce_field( 'ccfm' ); ?>
+        <input type="hidden" name="ccfm_set" value="1" />
+        <input type="submit" class="button button-large" value="<?php _e( 'Set', 'ccfm' ); ?>">
+    </p>
+    </form>
     <?php
-         endif;
-    endif;
+        }
+    }
 }
 
 /**
  * Clear the cache if requested.
  */
-function ccfm_clear_cache_requested() {
-    if ( isset( $_GET['ccfm'] ) ) {
+function ccfm_handle_requests() {
+    if ( isset( $_POST['ccfm'] ) ) {
+        check_admin_referer( 'ccfm' );
         $needed_cap = get_option( 'ccfm_permission', 'manage_options' );
+        $is_success = 0;
         if ( current_user_can( $needed_cap ) ) {
             ccfm_clear_cache_for_me( 'button' );
+            $is_success = 1;
             add_action( 'admin_notices', 'ccfm_success' );
+        }
+        else {
+            add_action( 'admin_notices', 'ccfm_error' );   
+        }
+        wp_safe_redirect( admin_url() . '?ccfm_success=' . $is_success );
+        exit;
+    }
+
+    if ( isset( $_GET['ccfm_success'] ) ) {
+        if ( !empty( $_GET['ccfm_success'] ) ) {
+            add_action( 'admin_notices', 'ccfm_success' );
+        }
+        else {
+            add_action( 'admin_notices', 'ccfm_error' );   
+        }
+    }
+    if ( isset( $_GET['ccfm_asuccess'] ) ) {
+        if ( !empty( $_GET['ccfm_asuccess'] ) ) {
+            add_action( 'admin_notices', 'ccfm_admin_success' );
         }
         else {
             add_action( 'admin_notices', 'ccfm_error' );   
@@ -140,11 +204,15 @@ function ccfm_clear_cache_requested() {
  * Set the capability needed to view the button.
  */
 function ccfm_set_capability() {
-    if ( isset( $_POST['ccfm_permission'] ) ) {
+    if ( isset( $_POST['ccfm_set'] ) ) {
+        check_admin_referer( 'ccfm' );
+        $is_success = 0;
         if ( current_user_can( 'manage_options' ) ) {
             update_option( 'ccfm_permission', sanitize_title( $_POST['ccfm_permission'] ) );
+            update_option( 'ccfm_infotext', wp_unslash( $_POST['ccfm_infotext'] ) );
+            $is_success = 1;
         }
-        wp_safe_redirect( admin_url() );
+        wp_safe_redirect( admin_url() . '?ccfm_asuccess=' . $is_success  );
         exit;
     }
 }
@@ -160,11 +228,21 @@ function ccfm_success() { ?>
 }
 
 /**
+ * Show the success notice for saving options.
+ */
+function ccfm_admin_success() { ?>
+    <div class="updated">
+        <p><?php _e( 'Settings Saved!', 'ccfm' ); ?></p>
+    </div>
+<?php
+}
+
+/**
  * Show the error notice.
  */
 function ccfm_error() { ?>
     <div class="error">
-        <p><?php _e( 'You do not have permission to clear the cache.', 'ccfm' ); ?></p>
+        <p><?php _e( 'You do not have permission to do that.', 'ccfm' ); ?></p>
     </div>
 <?php
 }
