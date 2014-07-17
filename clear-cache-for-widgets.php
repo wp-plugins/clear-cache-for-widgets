@@ -24,6 +24,9 @@ function ccfm_admin_init() {
         ccfm_set_capability();
 
         add_action( 'wp_dashboard_setup', 'ccfm_dashboard_widget' );
+        
+        //add styles for dashboard
+        add_action( 'admin_head', 'ccfm_admin_head' );
 
         //detect widget save, reorder and delete detection.  Thanks to Ov3rfly.
         add_action( 'wp_ajax_save-widget', 'ccfm_clear_cache_for_widgets_wp_ajax_action', 1 );
@@ -114,13 +117,15 @@ function ccfm_dashboard_widget_output() {
     if ( current_user_can( $needed_cap ) ) {
         $infotext = get_option( 'ccfm_infotext', '' );
     ?>
+<div class="ccf_widget">
     <form method="post">
-    <?php echo ( $infotext ) ? '<label for="ccfm-cache-button">' . $infotext . '</label>' : ''; ?>
+    <?php echo ( $infotext ) ? '<p>' . $infotext . '</p>' : ''; ?>
     <p>
         <?php wp_nonce_field( 'ccfm' ); ?>
-        <input id="ccfm-cache-button" type="submit" name="ccfm" class="button button-primary button-large" value="<?php _e( 'Clear Cache Now!', 'ccfm' ); ?>">
+        <input type="submit" name="ccfm" class="button button-primary button-large" value="<?php _e( 'Clear Cache Now!', 'ccfm' ); ?>">
     </p>
     </form>
+</div>
     <?php
         if ( current_user_can( 'manage_options' ) ) {
             global $wp_roles;
@@ -135,21 +140,20 @@ function ccfm_dashboard_widget_output() {
             }
             asort( $caps );
     ?>
-    <hr>
-    <br>
+<div class="ccf_widget">
     <h4><?php _e( 'Settings', 'ccfm' ); ?></h4>
     <form method="post">
+    <label for="ccfm_permission"><?php _e( 'Show button for users with capability:', 'ccfm' ); ?></label>
     <p>
-        <label for="ccfm_permission"><?php _e( 'Show button for users with capability:', 'ccfm' ); ?></label><br>
         <select name="ccfm_permission" id="ccfm_permission">
             <?php foreach ( $caps as $cap ) : ?>
                 <option value="<?php echo esc_attr($cap); ?>" <?php selected( $needed_cap, $cap );?>><?php echo $cap; ?></option>
             <?php endforeach; ?>
         </select>
     </p>
+    <label for="ccfm_infotext"><?php _e( 'Instructions to show above button (optional):', 'ccfm' ); ?></label>
     <p>
-        <label for="ccfm_infotext"><?php _e( 'Instructions to show above button (optional):', 'ccfm' ); ?></label><br>
-        <input style="width:75%;" id="ccfm_infotext" name="ccfm_infotext" type="text" value="<?php echo ( $infotext ) ? esc_attr( $infotext) : ''; ?>" />
+        <input id="ccfm_infotext" name="ccfm_infotext" type="text" value="<?php echo esc_attr( $infotext); ?>" />
     </p>
     <p>
         <?php wp_nonce_field( 'ccfm' ); ?>
@@ -157,10 +161,45 @@ function ccfm_dashboard_widget_output() {
         <input type="submit" class="button button-large" value="<?php _e( 'Set', 'ccfm' ); ?>">
     </p>
     </form>
+</div>
     <?php
         }
     }
 }
+
+/**
+ * Add some CSS.
+ */
+function ccfm_admin_head() {
+?>
+<style type="text/css">
+#dashboard_ccfm_widget .inside {
+    margin: 0;
+    padding: 0;
+}
+#dashboard_ccfm_widget .ccf_widget {
+    border-top: 1px solid #eee;
+    font-size: 13px;
+    padding: 8px 12px 4px 12px;
+}
+#dashboard_ccfm_widget .ccf_widget:first-child {
+    border-top: none;
+}
+#dashboard_ccfm_widget p {
+    margin: 0 0 8px 0;
+}
+#dashboard_ccfm_widget label {
+    display: block;
+    margin: 0 0 4px 0;
+    color: #777;
+}
+#dashboard_ccfm_widget input[name="ccfm_infotext"] {
+    width: 80%;
+}
+</style>
+<?php
+}
+
 
 /**
  * Clear the cache if requested.
