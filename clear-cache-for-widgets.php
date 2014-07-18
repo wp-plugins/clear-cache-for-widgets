@@ -5,7 +5,7 @@ Plugin URI: http://mymonkeydo.com/caching-with-widgets
 Description: Purges all cache on WT3, WP Super Cache, or WPEngine when updating the menus or widgets.  Also adds a button with optional instructions to the dashboard to clear the cache.
 Author: Webhead LLC
 Author URI: http://webheadcoder.com 
-Version: 0.6
+Version: 0.6.1
 */
 
 // locale
