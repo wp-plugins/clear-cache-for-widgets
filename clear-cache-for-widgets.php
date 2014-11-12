@@ -5,7 +5,7 @@ Plugin URI: http://mymonkeydo.com/caching-with-widgets
 Description: Purges all cache on WT3, WP Super Cache, or WPEngine when updating the menus or widgets.  Also adds a button with optional instructions to the dashboard to clear the cache.
 Author: Webhead LLC
 Author URI: http://webheadcoder.com 
-Version: 0.6.1
+Version: 0.6.2
 */
 
 // locale
@@ -117,7 +117,7 @@ function ccfm_dashboard_widget_output() {
     if ( current_user_can( $needed_cap ) ) {
         $infotext = get_option( 'ccfm_infotext', '' );
     ?>
-<div class="ccf_widget">
+<div class="ccfm_widget">
     <form method="post">
     <?php echo ( $infotext ) ? '<p>' . $infotext . '</p>' : ''; ?>
     <p>
@@ -140,7 +140,7 @@ function ccfm_dashboard_widget_output() {
             }
             asort( $caps );
     ?>
-<div class="ccf_widget">
+<div class="ccfm_widget">
     <h4><?php _e( 'Settings', 'ccfm' ); ?></h4>
     <form method="post">
     <label for="ccfm_permission"><?php _e( 'Show button for users with capability:', 'ccfm' ); ?></label>
@@ -177,13 +177,16 @@ function ccfm_admin_head() {
     margin: 0;
     padding: 0;
 }
-#dashboard_ccfm_widget .ccf_widget {
+#dashboard_ccfm_widget .ccfm_widget {
     border-top: 1px solid #eee;
     font-size: 13px;
     padding: 8px 12px 4px 12px;
 }
-#dashboard_ccfm_widget .ccf_widget:first-child {
+#dashboard_ccfm_widget .ccfm_widget:first-child {
     border-top: none;
+}
+#dashboard_ccfm_widget h4 {
+    margin-bottom: 4px;
 }
 #dashboard_ccfm_widget p {
     margin: 0 0 8px 0;
